@@ -1,23 +1,14 @@
-<!DOCTYPE html>
+<?php require "layout.php" ?>
 
 
-<html>
+<?php echo $pre_title_boilerplate ?>
 
-<head>
-    <meta charset="UTF-8">
-</head>
+<h1>This is the main page.</h1>
 
+<?php echo $pre_content_boilerplate ?>
 
-<body>
-    <?php echo "This is the main page.<br>"; ?>
+<form method="get" action="list.php">
+    <input type="submit" value="Go to list">
+</form>
 
-
-    <form method="post" action="list.php">
-        <input type="submit" value="Go to list">
-    </form>
-
-
-
-</body>
-
-</html>
+<?php echo $post_content_boilerplate ?>
