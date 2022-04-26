@@ -1,65 +1,56 @@
-<!DOCTYPE html>
+<?php require "layout.php"; ?>
 
 
-<html>
+<?php echo $pre_title_boilerplate; ?>
 
-<head>
-    <meta charset="UTF-8">
-</head>
+<h1>Here will be a table view of items.</h1>
+
+<?php echo $pre_content_boilerplate; ?>
+
+<?php
+require "serverdata.php";
+
+try
+{
+    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+
+    if ($pdo)
+        echo "Connected to database successfully.<br>";
+    else
+        echo "Failed to connect to database but no exception was thrown.<br>";
 
 
-<body>
-    <?php echo "Here will be a table view of items.<br>"; ?>
+    $query_result = $pdo->query("SELECT * FROM devices;")->fetchAll();
+}
+catch (PDOException $e)
+{
+    echo "PDOException: " . $e->getMessage();
+}
 
 
-    <?php
-    require "serverdata.php";
-
-    try
+echo "<table>";
+echo "
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Manufacturer</th>
+        <th>Location</th>
+        <th>CPU model</th>
+        <th>CPU max frequency [MHz]</th>
+        <th>RAM model</th>
+        <th>RAM amount [GB]</th>
+        <th>Graphics card model</th>
+        <th>Disk model</th>
+        <th>Disk amount [GB]</th>
+        <th>Screen diagonal [inch]</th>
+        <th>Screen resolution</th>
+    </tr>";
+if ($query_result)
+{
+    foreach ($query_result as $device)
     {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
-
-        if ($pdo)
-        {
-            echo "Connected to database successfully.<br>";
-        }
-        else
-        {
-            echo "Failed to connect to database but no exception was thrown.<br>";
-        }
-
-
-        $query_result = $pdo->query("SELECT * FROM devices;")->fetchAll();
-    }
-    catch (PDOException $e)
-    {
-        echo "PDOException: " . $e->getMessage();
-    }
-
-
-    echo "<table>";
-    echo "
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Manufacturer</th>
-            <th>Location</th>
-            <th>CPU model</th>
-            <th>CPU max frequency [MHz]</th>
-            <th>RAM model</th>
-            <th>RAM amount [GB]</th>
-            <th>Graphics card model</th>
-            <th>Disk model</th>
-            <th>Disk amount [GB]</th>
-            <th>Screen diagonal [inch]</th>
-            <th>Screen resolution</th>
-        </tr>";
-    if ($query_result)
-    {
-        foreach ($query_result as $device)
-        {
-            echo "
+        echo "
             <tr>
                 <td>" . $device['id'] . "</td>
                 <td>" . $device['name'] . "</td>
@@ -76,11 +67,9 @@
                 <td>" . $device['screen_diagonal_inch'] . "</td>
                 <td>" . $device['screen_resolution'] . "</td>
             </tr>";
-        }
     }
-    echo "</table>";
-    ?>
+}
+echo "</table>";
+?>
 
-</body>
-
-</html>
+<?php echo $post_content_boilerplate ?>
