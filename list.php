@@ -119,6 +119,8 @@ function get_query_string($filters)
 
 function get_where_part($filters)
 {
+    if (!$filters) return false;
+
     $result = "WHERE ";
 
     foreach ($filters as $key => $value)
