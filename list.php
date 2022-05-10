@@ -46,7 +46,7 @@ $filters = decode_filters($_REQUEST["existing_filters"]);
 
 if ($_REQUEST["new_filter_name"] && $_REQUEST["new_filter_value"])
     $filters[$_REQUEST["new_filter_name"]] = $_REQUEST["new_filter_value"];
-else
+else if ($_REQUEST["new_filter_name"])
     unset($filters[$_REQUEST["new_filter_name"]]);
 
 
@@ -119,6 +119,8 @@ function get_query_string($filters)
 
 function get_where_part($filters)
 {
+    if (!$filters) return false;
+
     $result = "WHERE ";
 
     foreach ($filters as $key => $value)
