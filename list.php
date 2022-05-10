@@ -46,7 +46,7 @@ $filters = decode_filters($_REQUEST["existing_filters"]);
 
 if ($_REQUEST["new_filter_name"] && $_REQUEST["new_filter_value"])
     $filters[$_REQUEST["new_filter_name"]] = $_REQUEST["new_filter_value"];
-else
+else if ($_REQUEST["new_filter_name"])
     unset($filters[$_REQUEST["new_filter_name"]]);
 
 
