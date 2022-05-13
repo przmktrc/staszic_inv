@@ -53,12 +53,12 @@ else if ($_REQUEST["new_filter_name"])
 if ($filters)
 {
     echo "
-    Active filters<br>
-    <table>
-        <tr>
-            <th>Column</th>
-            <th>Filter</th>
-        </tr>";
+        Active filters<br>
+        <table>
+            <tr>
+                <th>Column</th>
+                <th>Filter</th>
+            </tr>";
     foreach ($filters as $name => $value)
     {
         echo "
