@@ -4,6 +4,7 @@ $navigation_boilerplate = "
     <div id=\"navigation_div\">
         <a href=\"index.php\">Main page</a>
         <a href=\"list.php\">List</a>
+        <a href=\"add_item.php\">Add item</a>
     </div>";
 
 
