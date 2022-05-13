@@ -8,9 +8,9 @@
 <?php echo $pre_content_boilerplate; ?>
 
 <?php
-/******************************
- * DISPLAY/HANDLE THE FILTERS *
- ******************************/
+/************************************
+ * DISPLAY/HANDLE FILTERS & SORTING *
+ ************************************/
 
 
 function encode_filters($filters)
@@ -49,16 +49,15 @@ if ($_REQUEST["new_filter_name"] && $_REQUEST["new_filter_value"])
 else if ($_REQUEST["new_filter_name"])
     unset($filters[$_REQUEST["new_filter_name"]]);
 
-
 if ($filters)
 {
     echo "
-        Active filters<br>
-        <table>
-            <tr>
-                <th>Column</th>
-                <th>Filter</th>
-            </tr>";
+    Active filters<br>
+    <table>
+        <tr>
+            <th>Column</th>
+            <th>Filter</th>
+        </tr>";
     foreach ($filters as $name => $value)
     {
         echo "
@@ -77,6 +76,8 @@ echo "
     Add/change a filter (case-insensitive, empty to delete, accepts mysql wildcards, null/not null to filter null/not null)<br>
     <form method='get' action='list.php'>
         <input type='hidden' name='existing_filters' value='" . encode_filters($filters) . "'>
+        <input type='hidden' name='sort_what' value='" . $_REQUEST["sort_what"] . "'>
+        <input type='hidden' name='sort_how' value='" . $_REQUEST["sort_how"] . "'>
         <select name='new_filter_name'>
             <option value='name'>Name</option>
             <option value='id'>Id</option>
@@ -94,6 +95,32 @@ echo "
         <input type='text' name='new_filter_value'>
         <input type='submit' value='Add filter'>
     </form><br>";
+
+echo "
+    Sorted by<br>
+    <form method='get' action=list.php>
+        <input type='hidden' name='existing_filters' value='" . encode_filters($filters) . "'>
+        <select name='sort_what'>
+            <option value='name'>Name</option>
+            <option value='id' selected>Id</option>
+            <option value='description'>Description</option>
+            <option value='manufacturer'>Manufacturer</option>
+            <option value='location'>Location</option>
+            <option value='cpu_model'>CPU Model</option>
+            <option value='cpu_max_freq_mhz'>CPU max frequency [MHz]</option>
+            <option value='graphics_model'>Graphics Card Model</option>
+            <option value='disk_model'>Disk Model</option>
+            <option value='disk_size_gb'>Disk size [GB]</option>
+            <option value='screen_diagonal_inch'>Screen diagonal [inch]</option>
+            <option value='screen_resolution'>Screen resolution</option>
+        </select>
+        <select name='sort_how'>
+            <option value='asc' selected>ascending</option>
+            <option value='desc'>descending</option>
+        </select>
+        <input type='submit' value='sort'>
+    </form><br>";
+
 ?>
 
 
@@ -113,6 +140,10 @@ function get_query_string($filters)
     $where_part = get_where_part($filters);
     if ($where_part)
         $query_string = $query_string . " " . $where_part;
+
+    $sort_part = get_sort_part();
+    if ($sort_part)
+        $query_string = $query_string . " " . $sort_part;
 
     return $query_string;
 }
@@ -134,6 +165,15 @@ function get_where_part($filters)
     return substr($result, 0, strlen($result) - 5);
 }
 
+function get_sort_part()
+{
+    if (!$_REQUEST["sort_what"])
+    {
+        return "ORDER BY id asc";
+    }
+
+    return "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"];
+}
 
 try
 {
