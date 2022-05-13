@@ -1,0 +1,50 @@
+#root_div
+{
+    min-height: 200px;
+    margin: 50px;
+
+    background-color: rgb(216, 216, 216);
+}
+
+
+#title_div
+{
+    padding: 10px;
+
+    text-align: center;
+
+    background-color: rgb(253, 148, 148);
+}
+
+
+#navigation_div
+{
+    padding: 10px;
+
+    background-color: rgb(116, 255, 111);
+}
+
+
+#content_div
+{
+    padding: 10px;
+
+    background-color: rgb(98, 231, 255);
+}
+
+
+#navigation_div a
+{
+    margin-left: 10px;
+    margin-right: 10px;
+
+    color: black;
+
+    text-decoration: none;
+}
+
+
+#navigation_div a :visited
+{
+    text-decoration: none;
+}
