@@ -92,21 +92,26 @@ if ($_REQUEST["name"])
     {
         $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
 
-        if ($pdo)
-            echo "Connected to database successfully.<br>";
-        else
+        if (!$pdo)
             echo "Failed to connect to database but no exception was thrown.<br>";
 
         $query_string = get_query_string();
-        echo "query_string: " . $query_string . "<br>";
+        // echo "query_string: " . $query_string . "<br>";
 
         if ($query_string)
+        {
             $query_result_pdo = $pdo->query($query_string);
+            echo "Item added (hopefully).<br>";
+        }
     }
     catch (PDOException $e)
     {
         echo "PDOException: " . $e->getMessage();
     }
+}
+else
+{
+    echo "Specifying name is required.<br>";
 }
 
 ?>
