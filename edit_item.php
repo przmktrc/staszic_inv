@@ -145,6 +145,11 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
                 <input type='text' name='screen_diagonal_inch' placeholder='Screen diagonal [inch]' value='" . $item["screen_diagonal_inch"] . "'>
                 <input type='text' name='screen_resolution' placeholder='Screen resolution' value='" . $item["screen_resolution"] . "'><br>
                 <input type='submit' value='Submit changes'>
+            </form>
+            <form method='post' action='edit_item.php'>
+                <input type='hidden' name='action' value='delete'>
+                <input type='hidden' name='id' value='" . $item["id"] . "'>
+                <input type='submit' value='Delete item'>
             </form><br>";
     }
     else
@@ -159,5 +164,72 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
     }
 }
 ?>
+
+
+<?php
+/*****************************************
+ * ASK FOR CONFIRMATION OF ITEM DELETION *
+ *****************************************/
+
+if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete")
+{
+    echo "
+        Are you sure you want to delete item with ID " . $_REQUEST["id"] . "?<br>
+        <form method='post' action='edit_item.php'>
+            <input type='hidden' name='action' value='delete_confirmed'>
+            <input type='hidden' name='id' value='" . $_REQUEST["id"] . "'>
+            <input type='submit' value='Yes, I am'>
+        </form>
+        <form method='post' action='edit_item.php'>
+            <input type='hidden' name='action' value='view'>
+            <input type='hidden' name='id' value='" . $_REQUEST["id"] . "'>
+            <input type='submit' value='No, I am not'>
+        </form>
+        ";
+}
+?>
+
+
+<?php
+/****************************
+ * DELETE ITEM IF CONFIRMED *
+ ****************************/
+
+
+function get_delete_query_string()
+{
+    $query_string = "DELETE FROM devices WHERE id = " . $_REQUEST["id"];
+
+    return $query_string;
+}
+
+
+if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete_confirmed")
+{
+    try
+    {
+        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+
+        $query_string = get_delete_query_string();
+
+        if ($query_string)
+            $pdo->query($query_string);
+    }
+    catch (PDOException $e)
+    {
+        echo "PDOException: " . $e->getMessage();
+    }
+
+
+    echo "
+        Item (hopefully) deleted.
+        <form method='post' action='edit_item.php'>
+            <input type='hidden' name='action' value='view'>
+            <input type='text' name='id' placeholder='ID'>
+            <input type='submit' value='Edit item'>
+        </form>";
+}
+?>
+
 
 <?php echo $post_content_boilerplate ?>
