@@ -86,6 +86,8 @@ echo "
             <option value='location'>Location</option>
             <option value='cpu_model'>CPU Model</option>
             <option value='cpu_max_freq_mhz'>CPU max frequency [MHz]</option>
+            <option value='ram_model'>RAM Model</option>
+            <option value='ram_amount_gb'>RAM amount [GB]</option>
             <option value='graphics_model'>Graphics Card Model</option>
             <option value='disk_model'>Disk Model</option>
             <option value='disk_size_gb'>Disk size [GB]</option>
@@ -108,6 +110,8 @@ echo "
             <option value='location'>Location</option>
             <option value='cpu_model'>CPU Model</option>
             <option value='cpu_max_freq_mhz'>CPU max frequency [MHz]</option>
+            <option value='ram_model'>RAM Model</option>
+            <option value='ram_amount_gb'>RAM amount [GB]</option>
             <option value='graphics_model'>Graphics Card Model</option>
             <option value='disk_model'>Disk Model</option>
             <option value='disk_size_gb'>Disk size [GB]</option>
