@@ -1,4 +1,5 @@
 <?php require "layout.php" ?>
+<?php require "util.php" ?>
 
 
 <?php echo $pre_title_boilerplate ?>
@@ -122,23 +123,8 @@ else
  * DISPLAY FORM TO ADD ITEM *
  ****************************/
 
-echo "
-    <form method='post' action='add_item.php'>
-        <input type='text' name='name' placeholder='Name' value='" . $_REQUEST["name"] . "'><br>
-        <textarea name='description' placeholder='Description' rows='5' cols='50'>" . $_REQUEST["description"] . "</textarea><br>
-        <input type='text' name='manufacturer' placeholder='Manufacturer' value='" . $_REQUEST["manufacturer"] . "'><br>
-        <input type='text' name='location' placeholder='Location' value='" . $_REQUEST["location"] . "'><br>
-        <input type='text' name='cpu_model' placeholder='CPU Model' value='" . $_REQUEST["cpu_model"] . "'>
-        <input type='text' name='cpu_max_freq_mhz' placeholder='CPU Max Frequency [MHz]' value='" . $_REQUEST["cpu_max_freq_mhz"] . "'><br>
-        <input type='text' name='ram_model' placeholder='RAM Model' value='" . $_REQUEST["ram_model"] . "'>
-        <input type='text' name='ram_amount_gb' placeholder='RAM Amount [GB]' value='" . $_REQUEST["ram_amount_gb"] . "'><br>
-        <input type='text' name='graphics_model' placeholder='Graphics card model' value='" . $_REQUEST["graphics_model"] . "'><br>
-        <input type='text' name='disk_model' placeholder='Disk model' value='" . $_REQUEST["disk_model"] . "'>
-        <input type='text' name='disk_size_gb' placeholder='Disk size [GB]' value='" . $_REQUEST["disk_size_gb"] . "'><br>
-        <input type='text' name='screen_diagonal_inch' placeholder='Screen diagonal [inch]' value='" . $_REQUEST["screen_diagonal_inch"] . "'>
-        <input type='text' name='screen_resolution' placeholder='Screen resolution' value='" . $_REQUEST["screen_resolution"] . "'><br>
-        <input type='submit' value='Add item'>
-    </form><br>";
+
+echo show_editable_item_form("post", "add_item.php", "Add item", $_REQUEST) . "<br>";
 ?>
 
 
