@@ -1,4 +1,5 @@
 <?php require "layout.php" ?>
+<?php require "util.php" ?>
 
 
 <?php echo $pre_title_boilerplate ?>
@@ -18,12 +19,7 @@
 
 if (!isset($_REQUEST["id"]))
 {
-    echo "
-        <form method='post' action='edit_item.php'>
-            <input type='hidden' name='action' value='view'>
-            <input type='text' name='id' placeholder='ID'>
-            <input type='submit' value='Edit item'>
-        </form>";
+    echo ask_id_form();
 }
 ?>
 
@@ -154,13 +150,7 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
     }
     else
     {
-        echo "
-            Device with that id not found.
-            <form method='post' action='edit_item.php'>
-                <input type='hidden' name='action' value='view'>
-                <input type='text' name='id' placeholder='ID' value='" . $_REQUEST["id"] . "'>
-                <input type='submit' value='Edit item'>
-            </form>";
+        echo "Device with that ID not found." . ask_id_form($_REQUEST["id"]);
     }
 }
 ?>
@@ -222,12 +212,7 @@ if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete_confirmed")
 
 
     echo "
-        Item (hopefully) deleted.
-        <form method='post' action='edit_item.php'>
-            <input type='hidden' name='action' value='view'>
-            <input type='text' name='id' placeholder='ID'>
-            <input type='submit' value='Edit item'>
-        </form>";
+        Item (hopefully) deleted." . ask_id_form();
 }
 ?>
 
