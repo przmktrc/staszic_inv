@@ -199,6 +199,7 @@ catch (PDOException $e)
 echo "<table>";
 echo "
     <tr>
+        <th></th>
         <th>Id</th>
         <th>Name</th>
         <th>Description</th>
@@ -220,6 +221,7 @@ if ($query_result)
     {
         echo "
             <tr>
+                <td><a style='text-decoration: none;' href='edit_item.php?action=edit&id=" . $device['id'] . "'>edit</a></td>
                 <td>" . $device['id'] . "</td>
                 <td>" . $device['name'] . "</td>
                 <td>" . $device['description'] . "</td>
