@@ -8,8 +8,6 @@
 
 <?php echo $pre_content_boilerplate ?>
 
-<?php require("serverdata.php"); ?>
-
 
 <?php
 /**********************************
@@ -70,19 +68,7 @@ function get_change_query_string()
 
 if ($_REQUEST["action"] == "edit" && isset($_REQUEST["id"]))
 {
-    try
-    {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
-
-        $query_string = get_change_query_string();
-
-        if ($query_string)
-            $pdo->query($query_string);
-    }
-    catch (PDOException $e)
-    {
-        echo "PDOException: " . $e->getMessage();
-    }
+    query_database(get_change_query_string());
 }
 ?>
 
@@ -103,21 +89,10 @@ function get_select_query_string($device_id)
 
 if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_REQUEST["id"]))
 {
-    try
-    {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+    $query_result_pdo = query_database(get_select_query_string($_REQUEST["id"]));
 
-        $query_string = get_select_query_string($_REQUEST["id"]);
-
-        $query_result_pdo = $pdo->query($query_string);
-
-        if ($query_result_pdo)
-            $item = $query_result_pdo->fetch();
-    }
-    catch (PDOException $e)
-    {
-        echo "PDOException: " . $e->getMessage();
-    }
+    if ($query_result_pdo)
+        $item = $query_result_pdo->fetch();
 
 
     if ($item)
@@ -188,23 +163,10 @@ function get_delete_query_string()
 
 if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete_confirmed")
 {
-    try
-    {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+    $query_result_pdo = query_database(get_delete_query_string());
 
-        $query_string = get_delete_query_string();
-
-        if ($query_string)
-            $pdo->query($query_string);
-    }
-    catch (PDOException $e)
-    {
-        echo "PDOException: " . $e->getMessage();
-    }
-
-
-    echo "
-        Item (hopefully) deleted." . ask_id_form();
+    if ($query_result_pdo)
+        echo "Item (hopefully) deleted." . ask_id_form();
 }
 ?>
 

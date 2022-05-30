@@ -38,3 +38,27 @@ function show_editable_item_form($method, $action, $button_text, $item = array()
             <input type='submit' value='$button_text'>
         </form>";
 }
+
+
+
+
+function query_database($query_string)
+{
+    require "serverdata.php";
+
+    try
+    {
+        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+
+        if ($pdo && $query_string)
+            return $pdo->query($query_string);
+        else
+            return false;
+    }
+    catch (PDOException $e)
+    {
+        echo "<br>PDOException: " . $e->getMessage() . "<br>";
+
+        return false;
+    }
+}

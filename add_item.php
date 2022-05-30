@@ -14,10 +14,8 @@
  * ADD ITEM IF GIVEN *
  *********************/
 
-require("serverdata.php");
 
-
-function get_query_string()
+function get_query_insert_string()
 {
     $key_string = "name";
     $value_string = "\"" . $_REQUEST["name"] . "\"";
@@ -89,26 +87,10 @@ function get_query_string()
 
 if ($_REQUEST["name"])
 {
-    try
-    {
-        $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
+    $query_result_pdo = query_database(get_query_insert_string());
 
-        if (!$pdo)
-            echo "Failed to connect to database but no exception was thrown.<br>";
-
-        $query_string = get_query_string();
-        // echo "query_string: " . $query_string . "<br>";
-
-        if ($query_string)
-        {
-            $query_result_pdo = $pdo->query($query_string);
-            echo "Item added (hopefully).<br>";
-        }
-    }
-    catch (PDOException $e)
-    {
-        echo "PDOException: " . $e->getMessage();
-    }
+    if ($query_result_pdo)
+        echo "Item (hopefully) added.<br>";
 }
 else
 {
