@@ -1,4 +1,5 @@
 <?php require "layout.php"; ?>
+<?php require "util.php"; ?>
 
 
 <?php echo $pre_title_boilerplate; ?>
@@ -134,8 +135,6 @@ echo "
  * DISPLAY THE ITEMS *
  *********************/
 
-require "serverdata.php";
-
 
 function get_query_string($filters)
 {
@@ -179,25 +178,10 @@ function get_sort_part()
     return "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"];
 }
 
-try
-{
-    $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
 
-    if ($pdo)
-        echo "Connected to database successfully.<br>";
-    else
-        echo "Failed to connect to database but no exception was thrown.<br>";
-
-
-    $query_string = get_query_string($filters);
-    $query_result_pdo = $pdo->query($query_string);
-    if ($query_result_pdo)
-        $query_result = $query_result_pdo->fetchAll();
-}
-catch (PDOException $e)
-{
-    echo "PDOException: " . $e->getMessage();
-}
+$query_result_pdo = query_database(get_query_string($filters));
+if ($query_result_pdo)
+    $devices = $query_result_pdo->fetchAll();
 
 
 echo "<table>";
@@ -219,9 +203,9 @@ echo "
         <th>Screen diagonal [inch]</th>
         <th>Screen resolution</th>
     </tr>";
-if ($query_result)
+if ($devices)
 {
-    foreach ($query_result as $device)
+    foreach ($devices as $device)
     {
         echo "
             <tr>
