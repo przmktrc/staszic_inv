@@ -9,6 +9,9 @@
 <?php echo $pre_content_boilerplate ?>
 
 
+<?php /* var_dump($_REQUEST); */ ?>
+
+
 <?php
 /**********************************
  * ASK FOR DEVICE ID IF NOT GIVEN *
@@ -28,47 +31,30 @@ if (!isset($_REQUEST["id"]))
  ****************************/
 
 
-function get_change_query_string()
+function get_change_query()
 {
     $query_string = "UPDATE devices SET ";
+    $query_params = array();
 
-    if ($_REQUEST["name"] != "")
-        $query_string = $query_string . "name = \"" . $_REQUEST["name"] . "\", ";
-    if ($_REQUEST["description"] != "")
-        $query_string = $query_string . "description = \"" . $_REQUEST["description"] . "\", ";
-    if ($_REQUEST["manufacturer"] != "")
-        $query_string = $query_string . "manufacturer = \"" . $_REQUEST["manufacturer"] . "\", ";
-    if ($_REQUEST["location"] != "")
-        $query_string = $query_string . "location = \"" . $_REQUEST["location"] . "\", ";
-    if ($_REQUEST["cpu_model"] != "")
-        $query_string = $query_string . "cpu_model = \"" . $_REQUEST["cpu_model"] . "\", ";
-    if ($_REQUEST["cpu_max_freq_mhz"] != "")
-        $query_string = $query_string . "cpu_max_freq_mhz = " . $_REQUEST["cpu_max_freq_mhz"] . ", ";
-    if ($_REQUEST["ram_model"] != "")
-        $query_string = $query_string . "ram_model = \"" . $_REQUEST["ram_model"] . "\", ";
-    if ($_REQUEST["ram_amount_gb"] != "")
-        $query_string = $query_string . "ram_amount_gb = " . $_REQUEST["ram_amount_gb"] . ", ";
-    if ($_REQUEST["graphics_model"] != "")
-        $query_string = $query_string . "graphics_model = \"" . $_REQUEST["graphics_model"] . "\", ";
-    if ($_REQUEST["disk_model"] != "")
-        $query_string = $query_string . "disk_model = \"" . $_REQUEST["disk_model"] . "\", ";
-    if ($_REQUEST["disk_size_gb"] != "")
-        $query_string = $query_string . "disk_size_gb = " . $_REQUEST["disk_size_gb"] . ", ";
-    if ($_REQUEST["screen_diagonal_inch"] != "")
-        $query_string = $query_string . "screen_diagonal_inch = " . $_REQUEST["screen_diagonal_inch"] . ", ";
-    if ($_REQUEST["screen_resolution"] != "")
-        $query_string = $query_string . "screen_resolution = \"" . $_REQUEST["screen_resolution"] . "\", ";
+    foreach ($_REQUEST as $key => $value)
+    {
+        if (is_valid_key($key) && $key != "id" && ($key != "name" || $value != ""))
+        {
+            $query_string = $query_string . " " . $key . " = ?, ";
+            array_push($query_params, $value);
+        }
+    }
 
     $query_string = substr($query_string, 0, strlen($query_string) - 2);
     $query_string = $query_string . " WHERE id = " . $_REQUEST["id"];
 
-    return $query_string;
+    return array("string" => $query_string, "params" => $query_params);
 }
 
 
 if ($_REQUEST["action"] == "edit" && isset($_REQUEST["id"]))
 {
-    query_database(get_change_query_string());
+    query_database(get_change_query());
 }
 ?>
 
@@ -79,17 +65,15 @@ if ($_REQUEST["action"] == "edit" && isset($_REQUEST["id"]))
  *******************************/
 
 
-function get_select_query_string($device_id)
+function get_select_query()
 {
-    $query_string = "SELECT * FROM devices WHERE id = " . $device_id;
-
-    return $query_string;
+    return array("string" => "SELECT * FROM devices WHERE id = ?", "params" => array($_REQUEST["id"]));
 }
 
 
 if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_REQUEST["id"]))
 {
-    $query_result_pdo = query_database(get_select_query_string($_REQUEST["id"]));
+    $query_result_pdo = query_database(get_select_query());
 
     if ($query_result_pdo)
         $item = $query_result_pdo->fetch();
@@ -98,7 +82,7 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
     if ($item)
     {
         echo "
-            Device ID: " . $item["id"] . "<br>" .
+            Device ID: " . sanitize($item["id"]) . "<br>" .
             show_editable_item_form(
                 "post",
                 "edit_item.php",
@@ -106,12 +90,12 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
                 $item,
                 "
                     <input type='hidden' name='action' value='edit'>
-                    <input type='hidden' name='id' value='" . $item["id"] . "'>
+                    <input type='hidden' name='id' value='" . sanitize($item["id"]) . "'>
                 "
             ) .
             "<form method='post' action='edit_item.php'>
                 <input type='hidden' name='action' value='delete'>
-                <input type='hidden' name='id' value='" . $item["id"] . "'>
+                <input type='hidden' name='id' value='" . sanitize($item["id"]) . "'>
                 <input type='submit' value='Delete item'>
             </form><br>";
     }
@@ -131,15 +115,15 @@ if (($_REQUEST["action"] == "view" || $_REQUEST["action"] == "edit") && isset($_
 if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete")
 {
     echo "
-        Are you sure you want to delete item with ID " . $_REQUEST["id"] . "?<br>
+        Are you sure you want to delete item with ID " . sanitize($_REQUEST["id"]) . "?<br>
         <form method='post' action='edit_item.php'>
             <input type='hidden' name='action' value='delete_confirmed'>
-            <input type='hidden' name='id' value='" . $_REQUEST["id"] . "'>
+            <input type='hidden' name='id' value='" . sanitize($_REQUEST["id"]) . "'>
             <input type='submit' value='Yes, I am'>
         </form>
         <form method='post' action='edit_item.php'>
             <input type='hidden' name='action' value='view'>
-            <input type='hidden' name='id' value='" . $_REQUEST["id"] . "'>
+            <input type='hidden' name='id' value='" . sanitize($_REQUEST["id"]) . "'>
             <input type='submit' value='No, I am not'>
         </form>
         ";
@@ -153,17 +137,15 @@ if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete")
  ****************************/
 
 
-function get_delete_query_string()
+function get_delete_query()
 {
-    $query_string = "DELETE FROM devices WHERE id = " . $_REQUEST["id"];
-
-    return $query_string;
+    return array("string" => "DELETE FROM devices WHERE id = ?", "params" => array($_REQUEST["id"]));
 }
 
 
 if (isset($_REQUEST["id"]) && $_REQUEST["action"] == "delete_confirmed")
 {
-    $query_result_pdo = query_database(get_delete_query_string());
+    $query_result_pdo = query_database(get_delete_query());
 
     if ($query_result_pdo)
         echo "Item (hopefully) deleted." . ask_id_form();
