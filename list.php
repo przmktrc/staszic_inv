@@ -28,7 +28,6 @@ function encode_filters($filters)
 
 function decode_filters($filters_string)
 {
-    // TODO: Sanitize user input
     $result = array();
     $filters_array = explode(';', $filters_string);
 
@@ -63,8 +62,8 @@ if ($filters)
     {
         echo "
             <tr>
-                <td>$name</td>
-                <td>$value</td>
+                <td>" . sanitize($name) . "</td>
+                <td>" . sanitize($value) . "</td>
             </tr>";
     }
     echo "</table><br>";
@@ -136,50 +135,65 @@ echo "
  *********************/
 
 
-function get_query_string($filters)
+function get_select_query($filters)
 {
     $query_string = "SELECT * FROM devices";
+    $query_params = array();
 
     $where_part = get_where_part($filters);
     if ($where_part)
-        $query_string = $query_string . " " . $where_part;
+    {
+        $query_string = $query_string . " " . $where_part["string"];
+        $query_params = array_merge($query_params, $where_part["params"]);
+    }
 
     $sort_part = get_sort_part();
     if ($sort_part)
-        $query_string = $query_string . " " . $sort_part;
+    {
+        $query_string = $query_string . " " . $sort_part["string"];
+        $query_params = array_merge($query_params, $sort_part["params"]);
+    }
 
-    return $query_string;
+    return array("string" => $query_string, "params" => $query_params);
 }
 
 function get_where_part($filters)
 {
     if (!$filters) return false;
 
-    $result = "WHERE ";
+    $where_string = "WHERE ";
+    $where_params = array();
 
     foreach ($filters as $key => $value)
     {
-        if ($value == "null" || $value == "not null")
-            $result = $result . "$key IS $value AND ";
-        else
-            $result = $result . "$key LIKE '$value' AND ";
+        if (is_valid_key($key))
+        {
+            if ($value == "null" || $value == "not null")
+            {
+                $where_string = $where_string . "$key IS $value AND ";
+            }
+            else
+            {
+                $where_string = $where_string . "$key LIKE ? AND ";
+                array_push($where_params, $value);
+            }
+        }
     }
 
-    return substr($result, 0, strlen($result) - 5);
+    return array("string" => substr($where_string, 0, strlen($where_string) - 5), "params" => $where_params);
 }
 
 function get_sort_part()
 {
-    if (!$_REQUEST["sort_what"])
-    {
-        return "ORDER BY id asc";
-    }
-
-    return "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"];
+    if (is_valid_key($_REQUEST["sort_what"]) && is_valid_sortby($_REQUEST["sort_how"]))
+        return array("string" => "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"], "params" => array());
+    else
+        return array("string" => "ORDER BY id asc", "params" => array());
 }
 
 
-$query_result_pdo = query_database(get_query_string($filters));
+
+$query_result_pdo = query_database(get_select_query($filters));
 if ($query_result_pdo)
     $devices = $query_result_pdo->fetchAll();
 
@@ -209,21 +223,21 @@ if ($devices)
     {
         echo "
             <tr>
-                <td><a style='text-decoration: none;' href='edit_item.php?action=edit&id=" . $device['id'] . "'>edit</a></td>
-                <td>" . $device['id'] . "</td>
-                <td>" . $device['name'] . "</td>
-                <td>" . $device['description'] . "</td>
-                <td>" . $device['manufacturer'] . "</td>
-                <td>" . $device['location'] . "</td>
-                <td>" . $device['cpu_model'] . "</td>
-                <td>" . $device['cpu_max_freq_mhz'] . "</td>
-                <td>" . $device['ram_model'] . "</td>
-                <td>" . $device['ram_amount_gb'] . "</td>
-                <td>" . $device['graphics_model'] . "</td>
-                <td>" . $device['disk_model'] . "</td>
-                <td>" . $device['disk_size_gb'] . "</td>
-                <td>" . $device['screen_diagonal_inch'] . "</td>
-                <td>" . $device['screen_resolution'] . "</td>
+                <td><a style='text-decoration: none;' href='edit_item.php?action=edit&id=" . sanitize($device['id']) . "'>edit</a></td>
+                <td>" . sanitize($device['id']) . "</td>
+                <td>" . sanitize($device['name']) . "</td>
+                <td>" . sanitize($device['description']) . "</td>
+                <td>" . sanitize($device['manufacturer']) . "</td>
+                <td>" . sanitize($device['location']) . "</td>
+                <td>" . sanitize($device['cpu_model']) . "</td>
+                <td>" . sanitize($device['cpu_max_freq_mhz']) . "</td>
+                <td>" . sanitize($device['ram_model']) . "</td>
+                <td>" . sanitize($device['ram_amount_gb']) . "</td>
+                <td>" . sanitize($device['graphics_model']) . "</td>
+                <td>" . sanitize($device['disk_model']) . "</td>
+                <td>" . sanitize($device['disk_size_gb']) . "</td>
+                <td>" . sanitize($device['screen_diagonal_inch']) . "</td>
+                <td>" . sanitize($device['screen_resolution']) . "</td>
             </tr>";
     }
 }
