@@ -1,17 +1,39 @@
 <?php
+require "util.php";
 echo "
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset=\"UTF-8\">
+ <style>
+.navbar {
+  overflow: hidden;
+  background-color: #333;
+  position: fixed; /* Set the navbar to fixed position */
+  top: 0; /* Position the navbar at the top of the page */
+  width: 100%; /* Full width */
+}
+</style>
 
 <link rel=\"stylesheet\" href=\"style.css\">
 </head>
-<body style=\"text-align:center;  margin: 0;  padding: 0;\">";
+<body style=\"text-align:center;  margin: 0;  padding: 0; \">";
+
+
+function encode_filters($filters)
+{
+    $result = "";
+
+    foreach ($filters as $key => $value)
+    {
+        $result = $result . $key . ";" . $value . ";";
+    }
+
+    return $result;
+}
 
 function decode_filters($filters_string)
 {
-    // TODO: Sanitize user input
     $result = array();
     $filters_array = explode(';', $filters_string);
 
@@ -27,6 +49,12 @@ function decode_filters($filters_string)
 
 
 $filters = decode_filters($_REQUEST["existing_filters"]);
+
+if ($_REQUEST["new_filter_name"] && $_REQUEST["new_filter_value"])
+    $filters[$_REQUEST["new_filter_name"]] = $_REQUEST["new_filter_value"];
+else if ($_REQUEST["new_filter_name"])
+    unset($filters[$_REQUEST["new_filter_name"]]);
+
 ?>
 
 
@@ -35,58 +63,69 @@ $filters = decode_filters($_REQUEST["existing_filters"]);
  * DISPLAY THE ITEMS *
  *********************/
 
-require "serverdata.php";
 
-
-function get_query_string($filters)
+function get_select_query($filters)
 {
     $query_string = "SELECT * FROM devices";
+    $query_params = array();
 
     $where_part = get_where_part($filters);
     if ($where_part)
-        $query_string = $query_string . " " . $where_part;
+    {
+        $query_string = $query_string . " " . $where_part["string"];
+        $query_params = array_merge($query_params, $where_part["params"]);
+    }
 
     $sort_part = get_sort_part();
     if ($sort_part)
-        $query_string = $query_string . " " . $sort_part;
+    {
+        $query_string = $query_string . " " . $sort_part["string"];
+        $query_params = array_merge($query_params, $sort_part["params"]);
+    }
 
-    return $query_string;
+    return array("string" => $query_string, "params" => $query_params);
 }
 
 function get_where_part($filters)
 {
     if (!$filters) return false;
 
-    $result = "WHERE ";
+    $where_string = "WHERE ";
+    $where_params = array();
 
     foreach ($filters as $key => $value)
     {
-        if ($value == "null" || $value == "not null")
-            $result = $result . "$key IS $value AND ";
-        else
-            $result = $result . "$key LIKE '$value' AND ";
+        if (is_valid_key($key))
+        {
+            if ($value == "null" || $value == "not null")
+            {
+                $where_string = $where_string . "$key IS $value AND ";
+            }
+            else
+            {
+                $where_string = $where_string . "$key LIKE ? AND ";
+                array_push($where_params, $value);
+            }
+        }
     }
 
-    return substr($result, 0, strlen($result) - 5);
+    return array("string" => substr($where_string, 0, strlen($where_string) - 5), "params" => $where_params);
 }
 
 function get_sort_part()
 {
-    if (!$_REQUEST["sort_what"])
-    {
-        return "ORDER BY id asc";
-    }
-
-    return "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"];
+    if (is_valid_key($_REQUEST["sort_what"]) && is_valid_sortby($_REQUEST["sort_how"]))
+        return array("string" => "ORDER BY " . $_REQUEST["sort_what"] . " " . $_REQUEST["sort_how"], "params" => array());
+    else
+        return array("string" => "ORDER BY id asc", "params" => array());
 }
 
-$pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=UTF8", $db_username, $db_user_password);
-$query_string = get_query_string($filters);
-$query_result_pdo = $pdo->query($query_string);
-if ($query_result_pdo)
-    $query_result = $query_result_pdo->fetchAll();
 
-echo "<table";
+
+$query_result_pdo = query_database(get_select_query($filters));
+if ($query_result_pdo)
+    $devices = $query_result_pdo->fetchAll();
+echo "<div class=\"navbar\"><table style=\"\"";
 echo "
     <tr style=\"width:100%;\">
         <td style=\"width:3%;\">Id</th>
@@ -103,33 +142,30 @@ echo "
         <td style=\"width:7%;\">Disk amount [GB]</th>
         <td style=\"width:4%;\">Screen diagonal [inch]</th>
         <td style=\"width:5%;\">Screen resolution</th>
-    </tr></table><table style=\"table-layout:fixed\">";
-if ($query_result)
-{
+    </tr></table></div><br><br><br><table style=\"table-layout:fixed; width:100%;\">";
+
 echo "<div style=\"overflow:auto;\">";
-    foreach ($query_result as $device)
-    {
-        echo "
+foreach ($devices as $device)
+{
+    echo "
             <tr style=\"width:100%;\">
-                <td style=\"width:3%;\">" . $device['id'] . "</td>
-                <td style=\"width:10%;\">" . $device['name'] . "</td>
-                <td style=\"width:15%;\">" . $device['description'] . "</td>
-                <td style=\"width:8%;\">" . $device['manufacturer'] . "</td>
-                <td style=\"width:10%;\">" . $device['location'] . "</td>
-                <td style=\"width:5%;\">" . $device['cpu_model'] . "</td>
-                <td style=\"width:7%;\">" . $device['cpu_max_freq_mhz'] . "</td>
-                <td style=\"width:5%;\">" . $device['ram_model'] . "</td>
-                <td style=\"width:5%;\">" . $device['ram_amount_gb'] . "</td>
-                <td style=\"width:8%;\">" . $device['graphics_model'] . "</td>
-                <td style=\"width:8%;\">" . $device['disk_model'] . "</td>
-                <td style=\"width:7%;\">" . $device['disk_size_gb'] . "</td>
-                <td style=\"width:4%;\">" . $device['screen_diagonal_inch'] . "</td>
-                <td style=\"width:5%;\">" . $device['screen_resolution'] . "</td>
+                <td style=\"width:3%;\">" . sanitize($device['id']) . "</td>
+                <td style=\"width:10%;\">" . sanitize($device['name']) . "</td>
+                <td style=\"width:15%;\">" . sanitize($device['description']) . "</td>
+                <td style=\"width:8%;\">" . sanitize($device['manufacturer']) . "</td>
+                <td style=\"width:10%;\">" . sanitize($device['location']) . "</td>
+                <td style=\"width:5%;\">" . sanitize($device['cpu_model']) . "</td>
+                <td style=\"width:7%;\">" . sanitize($device['cpu_max_freq_mhz']) . "</td>
+                <td style=\"width:5%;\">" . sanitize($device['ram_model']) . "</td>
+                <td style=\"width:5%;\">" . sanitize($device['ram_amount_gb']) . "</td>
+                <td style=\"width:8%;\">" . sanitize($device['graphics_model']) . "</td>
+                <td style=\"width:8%;\">" . sanitize($device['disk_model']) . "</td>
+                <td style=\"width:7%;\">" . sanitize($device['disk_size_gb']) . "</td>
+                <td style=\"width:4%;\">" . sanitize($device['screen_diagonal_inch']) . "</td>
+                <td style=\"width:5%;\">" . sanitize($device['screen_resolution']) . "</td>
             </tr>";
-    }
 }
-echo "</div>";
-echo "</table>";
+echo "</table></div>";
 ?>
 
 <?php echo $post_content_boilerplate ?>
