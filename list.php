@@ -8,6 +8,17 @@
 
 <?php echo $pre_content_boilerplate; ?>
 
+
+<?php
+/* DISPLAY LINK TO FULL SCREEN VIEW */
+
+$new_link = $_SERVER['REQUEST_URI'];
+$new_link = substr($new_link, 0, 17) . "_full_screen" . substr($new_link, 17, 694202137);
+
+echo "<a href=$new_link target=\"_blank\">Full screen view</a><br><br>";
+?>
+
+
 <?php
 /************************************
  * DISPLAY/HANDLE FILTERS & SORTING *
